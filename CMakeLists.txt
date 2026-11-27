@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 project(llm_traffic_proxy VERSION 0.1.0 LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 option(ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" ON)
 option(BUILD_TESTING "Build unit tests" ON)
 
@@ -38,7 +40,7 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(googletest)
 
     enable_testing()
-    add_executable(proxy_tests tests/test_sanity.cpp)
+    add_executable(proxy_tests tests/test_socket.cpp)
     target_link_libraries(proxy_tests PRIVATE proxy_core GTest::gtest_main)
     include(GoogleTest)
     gtest_discover_tests(proxy_tests)
