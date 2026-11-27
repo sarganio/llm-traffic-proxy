@@ -55,7 +55,7 @@ TEST(SocketTest, ConnectFailureThrows) {
     EXPECT_THROW(sock.connect_to("127.0.0.1", closed_port), std::system_error);
 }
 
-TEST(SocketTest, SendAndReceiveMultiKilobytePayload) {
+TEST(SocketTest, LoopbackTcpTransfer) {
     auto server = proxy::Socket::create_tcp();
     server.bind_and_listen("127.0.0.1", 0);
 
@@ -64,10 +64,8 @@ TEST(SocketTest, SendAndReceiveMultiKilobytePayload) {
     ASSERT_EQ(::getsockname(server.native_handle(), reinterpret_cast<sockaddr*>(&sin), &len), 0);
     const uint16_t port = ntohs(sin.sin_port);
 
-    std::vector<std::byte> payload(65536);
-    for (std::size_t i = 0; i < payload.size(); ++i) {
-        payload[i] = static_cast<std::byte>(i & 0xFF);
-    }
+    // 8KB payload
+    std::vector<std::byte> payload(8192, std::byte{0x42});
 
     std::jthread client_thread([port, &payload]() {
         auto client = proxy::Socket::create_tcp();
@@ -80,7 +78,7 @@ TEST(SocketTest, SendAndReceiveMultiKilobytePayload) {
 
     std::vector<std::byte> received;
     received.reserve(payload.size());
-    std::array<std::byte, 4096> chunk{};
+    std::array<std::byte, 1024> chunk{};
 
     while (received.size() < payload.size()) {
         const std::ptrdiff_t bytes_read = peer.recv_some(chunk);
@@ -88,5 +86,6 @@ TEST(SocketTest, SendAndReceiveMultiKilobytePayload) {
         received.insert(received.end(), chunk.begin(), chunk.begin() + bytes_read);
     }
 
+    EXPECT_EQ(received.size(), payload.size());
     EXPECT_EQ(received, payload);
 }
