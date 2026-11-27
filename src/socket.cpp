@@ -126,4 +126,13 @@ namespace proxy
 
         return bytesRecieved;
     }
+
+    void Socket::shutdown_write() const
+    {
+        int shutdownStatus = ::shutdown(_fd, SHUT_WR) < 0;
+        if (shutdownStatus == ENOTCONN)
+            return;
+        throw std::system_error(errno, std::generic_category(), std::string("recv"));
+    }
+
 }

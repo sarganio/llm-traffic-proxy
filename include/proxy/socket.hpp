@@ -21,7 +21,7 @@ public:
     // Transfer ownership safely
     Socket(Socket&& other) noexcept : _fd(std::exchange(other._fd, -1)) {}
     Socket& operator=(Socket&& other) noexcept;
-    
+
     //allocate a TCP socket and set SO_REUSEADDR
     [[nodiscard]] static Socket create_tcp();
     //set socket to listen on the given IP and port
@@ -33,6 +33,7 @@ public:
 
     [[nodiscard]] std::ptrdiff_t recv_some(std::span<std::byte> buffer) const;
     void send_all(std::span<const std::byte> data) const;
+    void shutdown_write() const;
 
     [[nodiscard]] int native_handle() const noexcept { return _fd; }
     [[nodiscard]] bool is_valid() const noexcept { return _fd >= 0; }
