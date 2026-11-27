@@ -40,7 +40,7 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(googletest)
 
     enable_testing()
-    add_executable(proxy_tests tests/test_socket.cpp)
+    add_executable(proxy_tests tests/test_sanity.cpp)
     target_link_libraries(proxy_tests PRIVATE proxy_core GTest::gtest_main)
     include(GoogleTest)
     gtest_discover_tests(proxy_tests)
