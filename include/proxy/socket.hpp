@@ -11,7 +11,7 @@ namespace proxy {
 class Socket {
 public:
     Socket() noexcept = default;
-    explicit Socket(int fd) noexcept : fd_(fd) {}
+    explicit Socket(int fd) noexcept : _fd(fd) {}
     ~Socket();
 
     // Prevent double-close by forbidding copy
@@ -19,23 +19,26 @@ public:
     Socket& operator=(const Socket&) = delete;
 
     // Transfer ownership safely
-    Socket(Socket&& other) noexcept : fd_(std::exchange(other.fd_, -1)) {}
+    Socket(Socket&& other) noexcept : _fd(std::exchange(other._fd, -1)) {}
     Socket& operator=(Socket&& other) noexcept;
-
+    
+    //allocate a TCP socket and set SO_REUSEADDR
     [[nodiscard]] static Socket create_tcp();
-
+    //set socket to listen on the given IP and port
     void bind_and_listen(std::string_view ip, uint16_t port, int backlog = 128);
+    //accept a client connection and return a new Socket for it
     [[nodiscard]] Socket accept_client() const;
+    //connect to a remote server at the given IP and port
     void connect_to(std::string_view ip, uint16_t port);
 
     [[nodiscard]] std::ptrdiff_t recv_some(std::span<std::byte> buffer) const;
     void send_all(std::span<const std::byte> data) const;
 
-    [[nodiscard]] int native_handle() const noexcept { return fd_; }
-    [[nodiscard]] bool is_valid() const noexcept { return fd_ >= 0; }
+    [[nodiscard]] int native_handle() const noexcept { return _fd; }
+    [[nodiscard]] bool is_valid() const noexcept { return _fd >= 0; }
 
 private:
-    int fd_{-1};
+    int _fd{-1};
 };
 
 } // namespace proxy
